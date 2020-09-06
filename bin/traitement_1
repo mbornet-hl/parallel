@@ -1,0 +1,21 @@
+#!/bin/bash
+
+# sleep_display() : identical to the script msg_sleep, but coded as a function
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+sleep_display()
+{
+	sleep 2
+	echo "$1"
+}
+
+# Export function
+# ~~~~~~~~~~~~~~~
+export -f sleep_display
+
+# Loop to generate individual tasks
+# and parallelize them
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+for i in {1..256}
+do
+	echo "sleep_display $i"
+done | ./parallel_v2 -n 17 -f -

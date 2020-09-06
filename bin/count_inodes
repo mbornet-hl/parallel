@@ -1,0 +1,6 @@
+#!/bin/bash
+#
+#	@(#)	[MB] aj_count_inodes	Version 1.1 du 20/06/24 - 
+#
+
+find "$1" -print 2> /dev/null | wc -l > "$2"

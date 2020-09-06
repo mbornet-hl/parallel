@@ -1,0 +1,204 @@
+#!/bin/bash
+#
+#	Parallelization script
+#	~~~~~~~~~~~~~~~~~~~~~~
+#
+#	Copyright (C) 2016-2020, Martial Bornet
+#
+#	This program is free software: you can redistribute it and/or modify
+#	it under the terms of the GNU General Public License as published by
+#	the Free Software Foundation; either version 3 of the License, or
+#	(at your option) any later version.
+#
+#	This program is distributed in the hope that it will be useful,
+#	but WITHOUT ANY WARRANTY; without even the implied warranty of
+#	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#	GNU General Public License for more details.
+#
+#	You should have received a copy of the GNU General Public License
+#	along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+#	---------------------------------------------------
+#
+#	@(#)	[MB] aj_parallel_v1	Version 1.4 du 20/09/06 - 
+#
+#	This script runs N processes in parallel
+#	(N may be specified as an argument).
+#	The user task is defined in the user_fct() function.
+#	The dataset for the different processes may come from
+#	a single source.
+#
+
+# Counter management
+# ~~~~~~~~~~~~~~~~~~
+init_counter()
+{
+	rm -f "$SHM_COUNTER"
+	echo "$NB_FREE" > "$SHM_COUNTER"
+}
+
+incr_counter()
+{
+	lock "$COUNTER_LOCK"
+	NB_FREE=$(cat "$SHM_COUNTER" 2> /dev/null)
+	NB_FREE=$(expr "$NB_FREE" + 1 2> /dev/null)
+	echo "$NB_FREE" > "$SHM_COUNTER"
+	unlock "$COUNTER_LOCK"
+}
+
+decr_counter()
+{
+	lock "$COUNTER_LOCK"
+	NB_FREE=$(cat "$SHM_COUNTER" 2> /dev/null)
+	NB_FREE=$(expr "$NB_FREE" - 1 2> /dev/null)
+	echo "$NB_FREE" > "$SHM_COUNTER"
+	unlock "$COUNTER_LOCK"
+}
+
+free_slots()
+{
+	lock "$COUNTER_LOCK"
+	NB_FREE=$(cat "$SHM_COUNTER" 2> /dev/null)
+	[ "$NB_FREE" -gt 0 ]
+	retcode=$?
+	unlock "$COUNTER_LOCK"
+	return $retcode
+}
+
+all_slot_free()
+{
+	lock "$COUNTER_LOCK"
+	NB_FREE=$(cat "$SHM_COUNTER" 2> /dev/null)
+	[ "$NB_FREE" = "$NB_THREADS" ]
+	retcode=$?
+	unlock "$COUNTER_LOCK"
+	return $retcode
+}
+
+# Lock management
+# ~~~~~~~~~~~~~~~
+lock()
+{
+	LOCK="$1"
+
+#	Version using "lockfile" from package "procmail"
+#	~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#	lockfile -1 -r -1 "$LOCK"
+
+#	Version using "flock" from package "util-linux"
+#	~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#	The following instruction locks the file "$LOCK",
+#	launches "sleep" in the background for 20 hours,
+#	and writes its PID into the "$LOCK" file.
+#	So the lock() function can return with "$LOCK" still locked.
+	flock "$LOCK" -c 'bash -c "sleep 72000 & echo \$! > '"$LOCK"'"'
+}
+
+unlock()
+{
+	LOCK="$1"
+
+#	Version using "lockfile" from package "procmail"
+#	~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#	rm -f "$LOCK"
+
+#	Version using "flock" from package "util-linux"
+#	~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#	The following code kills the process ("sleep ...")
+#	whose PID is specified in the "$LOCK" file, which
+#	unlocks the lock file.
+	if [ -f "$LOCK" ]; then
+		kill -9 `cat "$LOCK" 2> /dev/null` 2> /dev/null
+	fi
+}
+
+clean_lock()
+{
+	unlock "$COUNTER_LOCK"
+	rm -f "$COUNTER_LOCK" "$SHM_COUNTER"
+}
+
+# Launch management
+# ~~~~~~~~~~~~~~~~~
+cond_launch()
+{
+	while ! free_slots
+	do
+		usleep 10000
+	done
+	decr_counter
+	launch "$@" &
+}
+
+launch()
+{
+	fct="$1"
+	shift
+
+	"$fct" "$@"
+	incr_counter
+}
+
+final_wait()
+{
+	while ! all_slot_free
+	do
+		sleep 2
+	done
+}
+
+init_prgm()
+{
+	init_sig
+	init_counter
+	unlock "$COUNTER_LOCK"
+}
+
+end_prgm()
+{
+	final_wait
+	clean_lock
+}
+
+sig_prgm()
+{
+	clean_lock
+	exit 1
+}
+
+init_sig()
+{
+	trap 'sig_prgm' 1 2 3 15
+}
+
+# User function
+# ~~~~~~~~~~~~~
+user_fct()
+{
+	sleep 2
+	echo "$1"
+}
+
+# Main program
+# ~~~~~~~~~~~~
+if [ "$1" != '' ]; then
+	readonly NB_THREADS="$1"
+else
+	readonly NB_THREADS=37
+fi
+
+NB_FREE="$NB_THREADS"
+readonly SHM_COUNTER="/dev/shm/proc_slot_count.$$"
+readonly COUNTER_LOCK="/tmp/counter_lock.$$"
+
+init_prgm
+
+# Loop that dispatches data from the dataset to the processes
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+for i in {1..256}
+do
+	cond_launch user_fct $i
+done
+
+
+end_prgm
