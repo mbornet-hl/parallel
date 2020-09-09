@@ -1,0 +1,8 @@
+count_inodes /datalake/dir_0001 > /tmp/nb_inodes_0001
+count_inodes /datalake/dir_0002 > /tmp/nb_inodes_0002
+count_inodes /datalake/dir_0003 > /tmp/nb_inodes_0003
+count_inodes /datalake/dir_0004 > /tmp/nb_inodes_0004
+[...]
+count_inodes /datalake/dir_0997 > /tmp/nb_inodes_0997
+count_inodes /datalake/dir_0998 > /tmp/nb_inodes_0998
+count_inodes /datalake/dir_0999 > /tmp/nb_inodes_0999

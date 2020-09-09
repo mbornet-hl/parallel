@@ -1,0 +1,28 @@
+#!/bin/bash
+#
+#	@(#)	[MB] aj_para_cmds_03	Version 1.2 du 20/06/24 - 
+#
+
+list_dir_files /bin     /tmp/dir_files_bin
+list_dir_files /boot    /tmp/dir_files_boot
+list_dir_files /cdrom   /tmp/dir_files_cdrom
+list_dir_files /cdrom0  /tmp/dir_files_cdrom0
+list_dir_files /cdrom1  /tmp/dir_files_cdrom1
+list_dir_files /dev     /tmp/dir_files_dev
+list_dir_files /etc     /tmp/dir_files_etc
+list_dir_files /home    /tmp/dir_files_home
+list_dir_files /lib     /tmp/dir_files_lib
+list_dir_files /lib32   /tmp/dir_files_lib32
+list_dir_files /lib64   /tmp/dir_files_lib64
+list_dir_files /media   /tmp/dir_files_media
+list_dir_files /mnt     /tmp/dir_files_mnt
+list_dir_files /proc    /tmp/dir_files_proc
+list_dir_files /root    /tmp/dir_files_root
+list_dir_files /run     /tmp/dir_files_run
+list_dir_files /sbin    /tmp/dir_files_sbin
+list_dir_files /selinux /tmp/dir_files_selinux
+list_dir_files /srv     /tmp/dir_files_srv
+list_dir_files /sys     /tmp/dir_files_sys
+list_dir_files /tmp     /tmp/dir_files_tmp
+list_dir_files /usr     /tmp/dir_files_usr
+list_dir_files /var     /tmp/dir_files_var

@@ -1,0 +1,28 @@
+#!/bin/bash
+#
+#	@(#)	[MB] aj_para_cmds_02	Version 1.1 du 20/06/24 - 
+#
+
+count_inodes /bin     /tmp/files_bin
+count_inodes /boot    /tmp/files_boot
+count_inodes /cdrom   /tmp/files_cdrom
+count_inodes /cdrom0  /tmp/files_cdrom0
+count_inodes /cdrom1  /tmp/files_cdrom1
+count_inodes /dev     /tmp/files_dev
+count_inodes /etc     /tmp/files_etc
+count_inodes /home    /tmp/files_home
+count_inodes /lib     /tmp/files_lib
+count_inodes /lib32   /tmp/files_lib32
+count_inodes /lib64   /tmp/files_lib64
+count_inodes /media   /tmp/files_media
+count_inodes /mnt     /tmp/files_mnt
+count_inodes /proc    /tmp/files_proc
+count_inodes /root    /tmp/files_root
+count_inodes /run     /tmp/files_run
+count_inodes /sbin    /tmp/files_sbin
+count_inodes /selinux /tmp/files_selinux
+count_inodes /srv     /tmp/files_srv
+count_inodes /sys     /tmp/files_sys
+count_inodes /tmp     /tmp/files_tmp
+count_inodes /usr     /tmp/files_usr
+count_inodes /var     /tmp/files_var
