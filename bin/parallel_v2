@@ -20,7 +20,7 @@
 #
 #	---------------------------------------------------
 #
-#	@(#)	[MB] aj_parallel_v2	Version 1.5 du 20/07/21 - 
+#	@(#)	[MB] aj_parallel_v2	Version 1.6 du 20/09/09 - 
 #
 #
 
@@ -63,11 +63,11 @@ decr_counter()
 	unlock "$COUNTER_LOCK"
 }
 
-no_free_slot()
+free_slots()
 {
 	lock "$COUNTER_LOCK"
 	NB_FREE=$(cat "$SHM_COUNTER" 2> /dev/null)
-	[ "$NB_FREE" = 0 ]
+	[ "$NB_FREE" -gt 0 ]
 	retcode=$?
 	unlock "$COUNTER_LOCK"
 	return $retcode
@@ -130,7 +130,7 @@ clean_lock()
 # ~~~~~~~~~~~~~~~~~
 cond_launch()
 {
-	while no_free_slot
+	while ! free_slots
 	do
 		usleep 10000
 	done
